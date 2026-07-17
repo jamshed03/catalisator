@@ -1,0 +1,20 @@
+{
+	"name": "catalisator",
+	"version": "1.0.0",
+	"description": "",
+	"main": "lib/migrator.js",
+	"bin": {
+		"catalisator": "./bin/cli.js"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "commonjs",
+	"dependencies": {
+		"@tailwindcss/postcss": "^4.3.3",
+		"postcss": "^8.5.19"
+	}
+}
