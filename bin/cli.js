@@ -10,7 +10,7 @@ console.log(`
 =========================================
 `)
 
-const migrator = new TailwindToScssMigrator({
+const defaultConfig = {
 	frontend: 'next.js',
 	prefix: 'ka',
 	stylesheet: 'scss',
@@ -18,7 +18,24 @@ const migrator = new TailwindToScssMigrator({
 	outputEntry: './src/app/[locale]/globals.scss',
 	cssEntry: './src/app/[locale]/globals.css',
 	whitelist: ['container', 'material-symbols-outlined'],
-})
+}
+
+const configPath = path.resolve(process.cwd(), 'catalisator.config.json')
+let finalConfig = { ...defaultConfig }
+
+if (fs.existsSync(configPath)) {
+	try {
+		const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+		finalConfig = { ...defaultConfig, ...userConfig }
+		console.log(`✅ Config-Datei geladen: catalisator.config.json`)
+	} catch (error) {
+		console.error(`❌ Fehler beim Lesen der catalisator.config.json. Verwende Standardwerte.`, error.message)
+	}
+} else {
+	console.log(`ℹ️ Keine catalisator.config.json gefunden. Verwende Standardwerte.`)
+}
+
+const migrator = new TailwindToScssMigrator(finalConfig)
 
 function scanDirectory(dir, fileList = []) {
 	const files = fs.readdirSync(dir)
