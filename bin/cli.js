@@ -2,6 +2,10 @@
 
 const fs = require('fs')
 const path = require('path')
+const args = process.argv.slice(2)
+const isDryRun = args.includes('--dry')
+const targetDir = args.find((arg) => !arg.startsWith('--')) || './src'
+
 const TailwindToScssMigrator = require('../lib/migrator')
 
 console.log(`
@@ -29,10 +33,14 @@ if (fs.existsSync(configPath)) {
 		finalConfig = { ...defaultConfig, ...userConfig }
 		console.log(`✅ Config-Datei geladen: catalisator.config.json`)
 	} catch (error) {
-		console.error(`❌ Fehler beim Lesen der catalisator.config.json. Verwende Standardwerte.`, error.message)
+		console.error(`❌ Fehler beim Lesen der Config. Verwende Standardwerte.`, error.message)
 	}
-} else {
-	console.log(`ℹ️ Keine catalisator.config.json gefunden. Verwende Standardwerte.`)
+}
+
+finalConfig.dryRun = isDryRun
+
+if (isDryRun) {
+	console.log(`\n🏜️  DRY RUN MODUS AKTIV: Es werden keine Dateien gespeichert oder verändert!\n`)
 }
 
 const migrator = new TailwindToScssMigrator(finalConfig)
@@ -73,7 +81,6 @@ function getCategory(filePath) {
 }
 
 async function runAutoMigration() {
-	const targetDir = process.argv[2] || './src'
 	if (!fs.existsSync(targetDir)) return console.error(`❌ Ordner '${targetDir}' wurde nicht gefunden.`)
 
 	console.log(`\n🔍 Scanne '${targetDir}' nach '${migrator.prefix}'-Klassen...\n`)
@@ -85,14 +92,18 @@ async function runAutoMigration() {
 		return
 	}
 
-	console.log(`🎯 ${filesToMigrate.length} Dateien gefunden. Starte automatische Migration...\n`)
+	console.log(`🎯 ${filesToMigrate.length} Dateien gefunden. Starte Migration...\n`)
 
 	for (const file of filesToMigrate) {
 		const category = getCategory(file)
 		await migrator.migrate(file, category)
 	}
 
-	console.log(`\n🎉 Alle gefundenen Dateien wurden erfolgreich migriert!\n`)
+	if (isDryRun) {
+		console.log(`\n🎉 Dry Run beendet! Alles sieht gut aus. Führe den Befehl ohne '--dry' aus, um zu speichern.\n`)
+	} else {
+		console.log(`\n🎉 Alle gefundenen Dateien wurden erfolgreich migriert!\n`)
+	}
 }
 
 runAutoMigration()
