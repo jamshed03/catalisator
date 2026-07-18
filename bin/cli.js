@@ -44,17 +44,16 @@ if (isDryRun) {
 	console.log(`\n🏜️  DRY RUN MODUS AKTIV: Es werden keine Dateien gespeichert oder verändert!\n`)
 }
 
-// 🔌 ADAPTER DYNAMISCH LADEN
 const parserName = finalConfig.frontend === 'next.js' ? 'react' : finalConfig.frontend
-const translatorName = finalConfig.stylesheet === 'scss' ? 'tailwind' : finalConfig.stylesheet
+const translatorName = finalConfig.source || 'tailwind'
+const formatterName = finalConfig.stylesheet === 'scss' ? 'scss' : 'css'
 
 const parser = require(`../adapters/parsers/${parserName}`)
 const translator = require(`../adapters/translators/${translatorName}`)
+const formatter = require(`../adapters/formatters/${formatterName}`)
 
-// ENGINE INITIALISIEREN
-const engine = new CatalisatorCore(finalConfig, parser, translator)
+const engine = new CatalisatorCore(finalConfig, parser, translator, formatter)
 
-// DEINE ALTE SCAN-LOGIK UNVERÄNDERT
 function scanDirectory(dir, fileList = []) {
 	const files = fs.readdirSync(dir)
 	for (const file of files) {
