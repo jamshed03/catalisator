@@ -49,23 +49,24 @@ fileService.ensureBaseFiles()
 
 async function runMigration() {
 	const tasks = scanner.buildTasks(targetDir)
+
 	if (tasks.length === 0) {
-		console.log('\n✨ Alles sauber!')
+		console.log('\n✨ Alles sauber! Keine Dateien zum Migrieren gefunden.')
 		return
 	}
 
-	console.log(`\n🎯 ${tasks.length} Dateien gefunden.`)
+	console.log(`\n🎯 ${tasks.length} Dateien gefunden. Starte parallele Verarbeitung...`)
 
-	for (const task of tasks) {
+	const migrationPromises = tasks.map(async (task) => {
 		try {
 			const fileContent = fileService.readFile(task.file)
 			const matches = adapter.input(fileContent)
-			if (matches.length === 0) continue
+			if (matches.length === 0) return null
 
 			console.log(`🚀 Migriere: ${path.basename(task.file)}`)
 			const migratedData = await adapter.migrate(matches)
 
-			if (migratedData.length === 0) continue
+			if (migratedData.length === 0) return null
 
 			const stylePath = fileService.resolveStylePath(task, formatter)
 			const fileName = task.name || path.basename(task.file, path.extname(task.file))
@@ -75,14 +76,28 @@ async function runMigration() {
 
 			fileService.writeFile(task.file, markup)
 			fileService.writeFile(stylePath, stylesheet)
-			fileService.updateGlobals(stylePath)
 
-			console.log(`✅ Erfolgreich aktualisiert.`)
+			console.log(`✅ Erfolgreich aktualisiert: ${path.basename(task.file)}`)
+
+			return stylePath
 		} catch (err) {
 			console.error(`\n❌ FEHLER bei Datei ${task.file}:`, err.message)
-			continue
+			return null
+		}
+	})
+
+	const results = await Promise.all(migrationPromises)
+
+	const generatedStyles = results.filter(Boolean)
+	const uniqueStyles = [...new Set(generatedStyles)]
+
+	if (uniqueStyles.length > 0) {
+		console.log(`\n🔗 Trage ${uniqueStyles.length} neue Styles in Globals ein...`)
+		for (const stylePath of uniqueStyles) {
+			fileService.updateGlobals(stylePath)
 		}
 	}
+
 	console.log(`\n🎉 Abgeschlossen!\n`)
 }
 
