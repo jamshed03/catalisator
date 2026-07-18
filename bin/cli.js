@@ -28,6 +28,9 @@ let finalConfig = { ...defaultConfig }
 if (fs.existsSync(configPath)) {
 	finalConfig = { ...defaultConfig, ...JSON.parse(fs.readFileSync(configPath, 'utf8')) }
 }
+if (!Array.isArray(finalConfig.whitelist)) {
+	finalConfig.whitelist = defaultConfig.whitelist
+}
 finalConfig.dryRun = isDryRun
 
 const parserName = finalConfig.frontend === 'next.js' ? 'react' : finalConfig.frontend
@@ -46,42 +49,39 @@ fileService.ensureBaseFiles()
 
 async function runMigration() {
 	const tasks = scanner.buildTasks(targetDir)
+	if (tasks.length === 0) {
+		console.log('\n✨ Alles sauber!')
+		return
+	}
 
-	if (tasks.length === 0) return console.log('\n✨ Alles sauber! Keine Dateien zum Migrieren gefunden.')
-	console.log(`\n🎯 ${tasks.length} Dateien gefunden. Starte Verarbeitung...\n`)
+	console.log(`\n🎯 ${tasks.length} Dateien gefunden.`)
 
 	for (const task of tasks) {
-		const fileContent = fileService.readFile(task.file)
+		try {
+			const fileContent = fileService.readFile(task.file)
+			const matches = adapter.input(fileContent)
+			if (matches.length === 0) continue
 
-		const matches = adapter.input(fileContent)
-		if (matches.length === 0) continue
+			console.log(`🚀 Migriere: ${path.basename(task.file)}`)
+			const migratedData = await adapter.migrate(matches)
 
-		console.log(`🚀 Migriere: ${task.file}`)
+			if (migratedData.length === 0) continue
 
-		const migratedData = await adapter.migrate(matches)
-		if (migratedData.length === 0) {
-			console.log(`⚡ Keine Klassen übersetzt. Überspringe Speichern.`)
+			const stylePath = fileService.resolveStylePath(task, formatter)
+			const fileName = task.name || path.basename(task.file, path.extname(task.file))
+			const styleHeader = fileService.resolveStyleHeader(stylePath, fileName, formatter)
+
+			const { markup, stylesheet } = adapter.output(fileContent, migratedData, styleHeader)
+
+			fileService.writeFile(task.file, markup)
+			fileService.writeFile(stylePath, stylesheet)
+			fileService.updateGlobals(stylePath)
+
+			console.log(`✅ Erfolgreich aktualisiert.`)
+		} catch (err) {
+			console.error(`\n❌ FEHLER bei Datei ${task.file}:`, err.message)
 			continue
 		}
-
-		let fileName = task.name || path.basename(task.file, path.extname(task.file))
-		if (!task.name && (fileName === 'page' || fileName === 'layout')) {
-			fileName = path.basename(path.dirname(task.file)).replace(/[\(\)\[\]]/g, '') || (fileName === 'page' ? 'home' : 'root')
-		}
-		const generatedName = task.category ? `_${fileName}` : `${fileName}.generated`
-		const stylePath = task.category ? path.join(fileService.paths.outputBase, task.category, `${generatedName}${formatter.extension}`) : path.join(path.dirname(task.file), `${generatedName}${formatter.extension}`)
-
-		const relVarsPath = path.relative(path.dirname(stylePath), path.join(fileService.paths.outputBase, formatter.variablesFile)).replace(/\\/g, '/')
-		const existingStyle = fileService.readFile(stylePath)
-		const styleHeader = existingStyle ? existingStyle.split('\n\n.')[0] : formatter.formatHeader(fileName, relVarsPath)
-
-		const { markup, stylesheet } = adapter.output(fileContent, migratedData, styleHeader)
-
-		fileService.writeFile(task.file, markup)
-		fileService.writeFile(stylePath, stylesheet)
-		fileService.updateGlobals(stylePath)
-
-		console.log(`✅ Erfolgreich aktualisiert.`)
 	}
 	console.log(`\n🎉 Abgeschlossen!\n`)
 }
