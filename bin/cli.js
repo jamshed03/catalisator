@@ -6,13 +6,10 @@ const args = process.argv.slice(2)
 const isDryRun = args.includes('--dry')
 const targetDir = args.find((arg) => !arg.startsWith('--')) || './src'
 
-const CatalisatorCore = require('../lib/core')
+const FileService = require('../lib/FileService')
+const MigrationAdapter = require('../lib/MigrationAdapter')
 
-console.log(`
-=========================================
- ⚡ CATALISATOR Engine 
-=========================================
-`)
+console.log(`\n=========================================\n ⚡ CATALISATOR Engine \n=========================================\n`)
 
 const defaultConfig = {
 	frontend: 'next.js',
@@ -27,22 +24,10 @@ const defaultConfig = {
 
 const configPath = path.resolve(process.cwd(), 'catalisator.config.json')
 let finalConfig = { ...defaultConfig }
-
 if (fs.existsSync(configPath)) {
-	try {
-		const userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'))
-		finalConfig = { ...defaultConfig, ...userConfig }
-		console.log(`✅ Config-Datei geladen: catalisator.config.json`)
-	} catch (error) {
-		console.error(`❌ Fehler beim Lesen der Config. Verwende Standardwerte.`, error.message)
-	}
+	finalConfig = { ...defaultConfig, ...JSON.parse(fs.readFileSync(configPath, 'utf8')) }
 }
-
 finalConfig.dryRun = isDryRun
-
-if (isDryRun) {
-	console.log(`\n🏜️  DRY RUN MODUS AKTIV: Es werden keine Dateien gespeichert oder verändert!\n`)
-}
 
 const parserName = finalConfig.frontend === 'next.js' ? 'react' : finalConfig.frontend
 const translatorName = finalConfig.source || 'tailwind'
@@ -52,21 +37,10 @@ const parser = require(`../adapters/parsers/${parserName}`)
 const translator = require(`../adapters/translators/${translatorName}`)
 const formatter = require(`../adapters/formatters/${formatterName}`)
 
-const engine = new CatalisatorCore(finalConfig, parser, translator, formatter)
+const fileService = new FileService(finalConfig, formatter, translator)
+const adapter = new MigrationAdapter(finalConfig, parser, translator, formatter)
 
-function scanDirectory(dir, fileList = []) {
-	const files = fs.readdirSync(dir)
-	for (const file of files) {
-		const fullPath = path.join(dir, file)
-		const stat = fs.statSync(fullPath)
-		if (stat.isDirectory()) {
-			if (file !== 'node_modules' && !file.startsWith('.')) scanDirectory(fullPath, fileList)
-		} else if (parser.extensions.some((ext) => file.endsWith(ext))) {
-			fileList.push(fullPath)
-		}
-	}
-	return fileList
-}
+fileService.ensureBaseFiles()
 
 function getCategory(filePath) {
 	const normalized = filePath.replace(/\\/g, '/')
@@ -77,7 +51,7 @@ function getCategory(filePath) {
 }
 
 async function runMigration() {
-	let migrationTasks = []
+	let tasks = []
 
 	if (finalConfig.include && Object.keys(finalConfig.include).length > 0) {
 		console.log(`\n📋 Manuelle Config-Liste erkannt. Lese Pfade und Regeln...`)
@@ -87,54 +61,86 @@ async function runMigration() {
 
 		for (const { key, val } of entries) {
 			const absPath = path.resolve(process.cwd(), key)
-			if (!fs.existsSync(absPath)) continue
+			if (!fs.existsSync(absPath)) {
+				console.log(`  ⚠️ Pfad nicht gefunden, überspringe: ${key}`)
+				continue
+			}
 
 			let customCategory = val?.category || (typeof val === 'string' ? val : null)
 			let customName = val?.name || null
 
 			const stat = fs.statSync(absPath)
 			if (stat.isFile()) {
-				migrationTasks.push({ file: absPath, category: customCategory || getCategory(absPath), name: customName })
+				if (parser.extensions.some((ext) => absPath.endsWith(ext))) {
+					tasks.push({ file: absPath, category: customCategory || getCategory(absPath), name: customName })
+				}
 			} else if (stat.isDirectory()) {
-				const dirFiles = scanDirectory(absPath)
+				const dirFiles = fileService.scanDirectory(absPath, parser.extensions)
 				for (const f of dirFiles) {
-					if (parser.needsMigration(fs.readFileSync(f, 'utf8'), finalConfig.prefix, finalConfig.whitelist)) {
-						migrationTasks.push({ file: f, category: customCategory || getCategory(f), name: null })
+					const content = fileService.readFile(f)
+					if (parser.needsMigration(content, finalConfig.prefix, finalConfig.whitelist)) {
+						tasks.push({ file: f, category: customCategory || getCategory(f), name: null })
 					}
 				}
 			}
 		}
 	} else {
-		if (!fs.existsSync(targetDir)) return console.error(`\n❌ Ordner '${targetDir}' wurde nicht gefunden.`)
 		console.log(`\n🔍 Auto-Scan: Scanne '${targetDir}' nach '${finalConfig.prefix}'-Klassen...\n`)
-		const allTsxFiles = scanDirectory(targetDir)
-		for (const f of allTsxFiles) {
-			if (parser.needsMigration(fs.readFileSync(f, 'utf8'), finalConfig.prefix, finalConfig.whitelist)) {
-				migrationTasks.push({ file: f, category: getCategory(f), name: null })
+		const allFiles = fileService.scanDirectory(targetDir, parser.extensions)
+		for (const f of allFiles) {
+			const content = fileService.readFile(f)
+			if (parser.needsMigration(content, finalConfig.prefix, finalConfig.whitelist)) {
+				tasks.push({ file: f, category: getCategory(f), name: null })
 			}
 		}
 	}
 
 	const uniqueTasks = []
 	const seen = new Set()
-	for (const task of migrationTasks) {
+	for (const task of tasks) {
 		if (!seen.has(task.file)) {
 			seen.add(task.file)
 			uniqueTasks.push(task)
 		}
 	}
 
-	if (uniqueTasks.length === 0) {
-		console.log('\n✨ Alles sauber! Keine Dateien zum Migrieren gefunden.')
-		return
-	}
-
+	if (uniqueTasks.length === 0) return console.log('\n✨ Alles sauber! Keine Dateien zum Migrieren gefunden.')
 	console.log(`\n🎯 ${uniqueTasks.length} Dateien gefunden. Starte Verarbeitung...\n`)
 
 	for (const task of uniqueTasks) {
-		await engine.migrate(task.file, task.category, task.name)
-	}
+		const fileContent = fileService.readFile(task.file)
 
+		const matches = adapter.input(fileContent)
+		if (matches.length === 0) continue
+
+		console.log(`🚀 Migriere: ${task.file}`)
+
+		const migratedData = await adapter.migrate(matches)
+		if (migratedData.length === 0) {
+			console.log(`⚡ Keine Klassen übersetzt. Überspringe Speichern.`)
+			continue
+		}
+
+		let fileName = task.name || path.basename(task.file, path.extname(task.file))
+		if (!task.name && (fileName === 'page' || fileName === 'layout')) {
+			fileName = path.basename(path.dirname(task.file)).replace(/[\(\)\[\]]/g, '') || (fileName === 'page' ? 'home' : 'root')
+		}
+
+		const generatedName = task.category ? `_${fileName}` : `${fileName}.generated`
+		const stylePath = task.category ? path.join(fileService.paths.outputBase, task.category, `${generatedName}${formatter.extension}`) : path.join(path.dirname(task.file), `${generatedName}${formatter.extension}`)
+
+		const relVarsPath = path.relative(path.dirname(stylePath), path.join(fileService.paths.outputBase, formatter.variablesFile)).replace(/\\/g, '/')
+		const existingStyle = fileService.readFile(stylePath)
+		const styleHeader = existingStyle ? existingStyle.split('\n\n.')[0] : formatter.formatHeader(fileName, relVarsPath)
+
+		const { markup, stylesheet } = adapter.output(fileContent, migratedData, styleHeader)
+
+		fileService.writeFile(task.file, markup)
+		fileService.writeFile(stylePath, stylesheet)
+		fileService.updateGlobals(stylePath)
+
+		console.log(`✅ Erfolgreich aktualisiert.`)
+	}
 	console.log(`\n🎉 Abgeschlossen!\n`)
 }
 
