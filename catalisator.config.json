@@ -1,0 +1,16 @@
+{
+	"frontend": "next.js",
+	"prefix": "ka",
+	"stylesheet": "scss",
+	"outputBase": "./src/styles",
+	"outputEntry": "./src/app/[locale]/globals.scss",
+	"cssEntry": "./src/app/[locale]/globals.css",
+	"whitelist": ["container", "material-symbols-outlined"],
+	"include": {
+		"./src/components/Header.tsx": "partials",
+		"./src/app/[locale]/(auth)/login/page.tsx": {
+			"category": "auth",
+			"name": "login_custom"
+		}
+	}
+}

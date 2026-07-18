@@ -6,11 +6,11 @@ const args = process.argv.slice(2)
 const isDryRun = args.includes('--dry')
 const targetDir = args.find((arg) => !arg.startsWith('--')) || './src'
 
-const TailwindToScssMigrator = require('../lib/migrator')
+const CatalisatorCore = require('../lib/core')
 
 console.log(`
 =========================================
- ⚡ CATALISATOR - Tailwind to SCSS 
+ ⚡ CATALISATOR Engine 
 =========================================
 `)
 
@@ -44,8 +44,17 @@ if (isDryRun) {
 	console.log(`\n🏜️  DRY RUN MODUS AKTIV: Es werden keine Dateien gespeichert oder verändert!\n`)
 }
 
-const migrator = new TailwindToScssMigrator(finalConfig)
+// 🔌 ADAPTER DYNAMISCH LADEN
+const parserName = finalConfig.frontend === 'next.js' ? 'react' : finalConfig.frontend
+const translatorName = finalConfig.stylesheet === 'scss' ? 'tailwind' : finalConfig.stylesheet
 
+const parser = require(`../adapters/parsers/${parserName}`)
+const translator = require(`../adapters/translators/${translatorName}`)
+
+// ENGINE INITIALISIEREN
+const engine = new CatalisatorCore(finalConfig, parser, translator)
+
+// DEINE ALTE SCAN-LOGIK UNVERÄNDERT
 function scanDirectory(dir, fileList = []) {
 	const files = fs.readdirSync(dir)
 	for (const file of files) {
@@ -53,30 +62,16 @@ function scanDirectory(dir, fileList = []) {
 		const stat = fs.statSync(fullPath)
 		if (stat.isDirectory()) {
 			if (file !== 'node_modules' && !file.startsWith('.')) scanDirectory(fullPath, fileList)
-		} else if (file.endsWith('.tsx') || file.endsWith('.jsx')) {
+		} else if (parser.extensions.some((ext) => file.endsWith(ext))) {
 			fileList.push(fullPath)
 		}
 	}
 	return fileList
 }
 
-function needsMigration(filePath) {
-	const content = fs.readFileSync(filePath, 'utf8')
-	const prefixRegex = new RegExp(`className=(['"])(${this.prefix}[a-zA-Z0-9_-]+)\\s*([^'"]*)\\1`, 'g')
-	let match
-
-	while ((match = prefixRegex.exec(content)) !== null) {
-		const extraClasses = match[2].trim()
-		if (!extraClasses) continue
-		const hasUnmigrated = extraClasses.split(/\s+/).some((c) => c && !migrator.whitelist.includes(c))
-		if (hasUnmigrated) return true
-	}
-	return false
-}
-
 function getCategory(filePath) {
 	const normalized = filePath.replace(/\\/g, '/')
-	const fileName = path.basename(filePath, '.tsx')
+	const fileName = path.basename(filePath, path.extname(filePath))
 	if (fileName === 'layout') return 'layouts'
 	if (normalized.includes('/app/') || normalized.includes('/pages/')) return 'pages'
 	return 'partials'
@@ -93,63 +88,29 @@ async function runMigration() {
 
 		for (const { key, val } of entries) {
 			const absPath = path.resolve(process.cwd(), key)
+			if (!fs.existsSync(absPath)) continue
 
-			if (!fs.existsSync(absPath)) {
-				console.log(`  ⚠️ Pfad nicht gefunden, überspringe: ${key}`)
-				continue
-			}
-
-			let customCategory = null
-			let customName = null
-
-			if (val) {
-				if (typeof val === 'string') {
-					customCategory = val
-				} else if (typeof val === 'object') {
-					customCategory = val.category || null
-					customName = val.name || null
-				}
-			}
+			let customCategory = val?.category || (typeof val === 'string' ? val : null)
+			let customName = val?.name || null
 
 			const stat = fs.statSync(absPath)
-			if (stat.isFile() && (absPath.endsWith('.tsx') || absPath.endsWith('.jsx'))) {
-				if (stat.isFile()) {
-					migrationTasks.push({
-						file: absPath,
-						category: customCategory || getCategory(absPath),
-						name: customName,
-					})
-				} else if (stat.isDirectory()) {
-					const dirFiles = scanDirectory(absPath)
-					for (const f of dirFiles) {
-						if (needsMigration(f)) {
-							migrationTasks.push({
-								file: f,
-								category: customCategory || getCategory(f),
-								name: null,
-							})
-						}
-					}
-				}
+			if (stat.isFile()) {
+				migrationTasks.push({ file: absPath, category: customCategory || getCategory(absPath), name: customName })
 			} else if (stat.isDirectory()) {
 				const dirFiles = scanDirectory(absPath)
 				for (const f of dirFiles) {
-					if (needsMigration(f)) {
-						migrationTasks.push({
-							file: f,
-							category: customCategory || getCategory(f),
-							name: null,
-						})
+					if (parser.needsMigration(fs.readFileSync(f, 'utf8'), finalConfig.prefix, finalConfig.whitelist)) {
+						migrationTasks.push({ file: f, category: customCategory || getCategory(f), name: null })
 					}
 				}
 			}
 		}
 	} else {
 		if (!fs.existsSync(targetDir)) return console.error(`\n❌ Ordner '${targetDir}' wurde nicht gefunden.`)
-		console.log(`\n🔍 Auto-Scan: Scanne '${targetDir}' nach '${migrator.prefix}'-Klassen...\n`)
+		console.log(`\n🔍 Auto-Scan: Scanne '${targetDir}' nach '${finalConfig.prefix}'-Klassen...\n`)
 		const allTsxFiles = scanDirectory(targetDir)
 		for (const f of allTsxFiles) {
-			if (needsMigration(f)) {
+			if (parser.needsMigration(fs.readFileSync(f, 'utf8'), finalConfig.prefix, finalConfig.whitelist)) {
 				migrationTasks.push({ file: f, category: getCategory(f), name: null })
 			}
 		}
@@ -169,17 +130,13 @@ async function runMigration() {
 		return
 	}
 
-	console.log(`\n🎯 ${uniqueTasks.length} Dateien gefunden. Starte Migration...\n`)
+	console.log(`\n🎯 ${uniqueTasks.length} Dateien gefunden. Starte Verarbeitung...\n`)
 
 	for (const task of uniqueTasks) {
-		await migrator.migrate(task.file, task.category, task.name)
+		await engine.migrate(task.file, task.category, task.name)
 	}
 
-	if (isDryRun) {
-		console.log(`\n🎉 Dry Run beendet! Führe den Befehl ohne '--dry' aus, um zu speichern.\n`)
-	} else {
-		console.log(`\n🎉 Migration abgeschlossen! JSX aufgeräumt und SCSS generiert.\n`)
-	}
+	console.log(`\n🎉 Abgeschlossen!\n`)
 }
 
 runMigration()
