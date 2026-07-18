@@ -74,8 +74,21 @@ async function runMigration() {
 
 			const { markup, stylesheet } = adapter.output(fileContent, migratedData, styleHeader)
 
-			fileService.writeFile(task.file, markup)
-			fileService.writeFile(stylePath, stylesheet)
+			let finalMarkup = markup
+			let finalStylesheet = stylesheet
+			try {
+				const prettier = require('prettier')
+				const prettierConfig = (await prettier.resolveConfig(task.file)) || {}
+				finalMarkup = await prettier.format(markup, { ...prettierConfig, filepath: task.file })
+
+				const styleConfig = (await prettier.resolveConfig(stylePath)) || {}
+				finalStylesheet = await prettier.format(stylesheet, { ...styleConfig, filepath: stylePath })
+			} catch (prettierError) {
+				console.log(`  ⚠️ Info: Konnte Code nicht automatisch formatieren. Speichere Rohversion.`)
+			}
+
+			fileService.writeFile(task.file, finalMarkup)
+			fileService.writeFile(stylePath, finalStylesheet)
 
 			console.log(`✅ Erfolgreich aktualisiert: ${path.basename(task.file)}`)
 
