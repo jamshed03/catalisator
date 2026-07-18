@@ -1,7 +1,14 @@
 const postcss = require('postcss')
 const tailwindv4 = require('@tailwindcss/postcss')
+const fs = require('fs')
 
 module.exports = {
+	getGlobalVariables: (cssEntry) => {
+		if (!cssEntry || !fs.existsSync(cssEntry)) return []
+		const content = fs.readFileSync(cssEntry, 'utf8').replace(/@import\s+['"]tailwindcss['"];/g, '')
+		return content.match(/--[\w-]+:\s*[^;]+;/g) || []
+	},
+
 	translate: async (classList, config) => {
 		if (!classList?.trim()) return null
 
@@ -12,8 +19,14 @@ module.exports = {
 
 		let allRules = []
 
+		const tailwindPath = require.resolve('tailwindcss/index.css')
+		let themeContent = ''
+		if (config.cssEntry && fs.existsSync(config.cssEntry)) {
+			themeContent = fs.readFileSync(config.cssEntry, 'utf8').replace(/@import\s+['"]tailwindcss['"];/g, '')
+		}
+
 		for (const cls of classes) {
-			const inputCss = `@import "${config.tailwindPath}";\n${config.themeContent}\n.extract-target { @apply ${cls}; }`
+			const inputCss = `@import "${tailwindPath}";\n${themeContent}\n.extract-target { @apply ${cls}; }`
 
 			try {
 				const result = await postcss([tailwindv4()]).process(inputCss, { from: undefined })
@@ -59,6 +72,7 @@ module.exports = {
 		}
 
 		if (allRules.length === 0) return null
+
 		const normalRules = []
 		const nestedRules = []
 		let inNested = false
