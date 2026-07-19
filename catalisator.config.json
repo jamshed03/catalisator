@@ -12,5 +12,6 @@
 			"category": "auth",
 			"name": "login_custom"
 		}
-	}
+	},
+	"autoFormat": false
 }
