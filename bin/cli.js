@@ -61,12 +61,16 @@ async function runMigration() {
 		try {
 			const fileContent = fileService.readFile(task.file)
 			const matches = adapter.input(fileContent)
-			if (matches.length === 0) return null
+			if (matches.length === 0) {
+				return null
+			}
 
 			console.log(`🚀 Migriere: ${path.basename(task.file)}`)
 			const migratedData = await adapter.migrate(matches)
 
-			if (migratedData.length === 0) return null
+			if (migratedData.length === 0) {
+				return null
+			}
 
 			const stylePath = fileService.resolveStylePath(task, formatter)
 			const fileName = task.name || path.basename(task.file, path.extname(task.file))
