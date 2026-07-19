@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-const MigrateCommand = require('../lib/MigrateCommand')
+const MigrateCommand = require('../lib/commands/MigrateCommand')
 
 new MigrateCommand().execute()
