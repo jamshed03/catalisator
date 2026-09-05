@@ -1,13 +1,39 @@
-.{{prefix}}grid { display: grid; }
-.{{prefix}}grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-.{{prefix}}grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.{{prefix}}grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.{{prefix}}grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.{{prefix}}col-span-1 { grid-column: span 1 / span 1; }
-.{{prefix}}col-span-2 { grid-column: span 2 / span 2; }
-.{{prefix}}col-span-full { grid-column: 1 / -1; }
-.{{prefix}}gap-0 { gap: 0; }
-.{{prefix}}gap-sm { gap: 0.5rem; }
-.{{prefix}}gap-md { gap: 1rem; }
-.{{prefix}}gap-lg { gap: 1.5rem; }
-.{{prefix}}place-items-center { place-items: center; }
+.u-grid {
+	display: grid;
+}
+.u-grid-cols-1 {
+	grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+.u-grid-cols-2 {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.u-grid-cols-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.u-grid-cols-4 {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.u-col-span-1 {
+	grid-column: span 1 / span 1;
+}
+.u-col-span-2 {
+	grid-column: span 2 / span 2;
+}
+.u-col-span-full {
+	grid-column: 1 / -1;
+}
+.u-gap-0 {
+	gap: 0;
+}
+.u-gap-sm {
+	gap: 0.5rem;
+}
+.u-gap-md {
+	gap: 1rem;
+}
+.u-gap-lg {
+	gap: 1.5rem;
+}
+.u-place-items-center {
+	place-items: center;
+}
