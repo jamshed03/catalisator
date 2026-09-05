@@ -1,0 +1,15 @@
+.{{prefix}}container {
+	width: 100%;
+	max-width: 1280px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: 1rem;
+	padding-right: 1rem;
+}
+
+.{{prefix}}container-sm { max-width: 640px; }
+.{{prefix}}container-md { max-width: 768px; }
+.{{prefix}}container-lg { max-width: 1024px; }
+.{{prefix}}container-xl { max-width: 1280px; }
+.{{prefix}}container-fluid { max-width: 100%; }
+.{{prefix}}container-no-padding { padding-left: 0; padding-right: 0; }
