@@ -37,3 +37,27 @@ Erstelle optional eine \`catalisator.config.json\` im Hauptverzeichnis deines Pr
 	"whitelist": ["container"]
 }
 ```
+
+## 🧰 Utils-Bibliothek
+
+Zusätzlich zur Migration bringt Catalisator eine kleine, mitgelieferte Bibliothek fertiger CSS-Utility-Module (`container`, `flex`, `grid`) mit — komplett unabhängig vom Migrations-Workflow. Alle Klassen verwenden den festen Prefix `u-` (z. B. `.u-flex`, `.u-container`).
+
+Du importierst sie direkt aus `node_modules`, genau wie bei Bootstrap oder anderen CSS-Bibliotheken — kein Generierungsschritt nötig:
+
+```css
+/* globals.css */
+@import 'catalisator/css/utils/container.css';
+@import 'catalisator/css/utils/flex.css';
+```
+
+```scss
+// globals.scss
+@use 'catalisator/css/utils/container';
+@use 'catalisator/css/utils/flex';
+```
+
+```jsx
+<div className="u-container u-flex u-items-center">...</div>
+```
+
+Solange du `catalisator` als Dependency installiert hast, funktionieren diese Imports. Entfernst du das Package, musst du die entsprechenden `@import`/`@use`-Zeilen ebenfalls entfernen.
