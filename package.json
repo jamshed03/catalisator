@@ -8,7 +8,8 @@
 	},
 	"scripts": {
 		"test": "jest",
-		"build:css": "postcss \"postcss/utils/**/*.css\" --base postcss --dir css --config postcss"
+		"build:css": "postcss \"postcss/utils/**/*.css\" --base postcss --dir css --config postcss",
+		"dev:css": "postcss \"postcss/utils/**/*.css\" --base postcss --dir css --config postcss --watch"
 	},
 	"keywords": [],
 	"author": "",
