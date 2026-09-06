@@ -1,0 +1,27 @@
+@use 'sass:math';
+@use '../variables' as *;
+
+@function strip-unit($value) {
+	@return math.div($value, ($value * 0 + 1));
+}
+
+// Bootstrap
+@mixin rfs-calc($property, $max-value) {
+	$factor: strip-unit($rfs-factor);
+	$base-value: strip-unit($rfs-base-value);
+	$max-breakpoint: strip-unit($breakpoint-xl);
+	$max-val-num: strip-unit($max-value);
+
+	@if $max-val-num > $base-value {
+		$min-value: $base-value + math.div($max-val-num - $base-value, $factor);
+		$slope: math.div($max-val-num - $min-value, $max-breakpoint);
+
+		$min: math.div($min-value, 16) * 1rem;
+		$max: math.div($max-val-num, 16) * 1rem;
+		$slope-vw: ($slope * 100) * 1vw;
+
+		#{$property}: clamp(#{$min}, calc(#{$slope-vw} + #{$min}), #{$max});
+	} @else {
+		#{$property}: math.div($max-val-num, 16) * 1rem;
+	}
+}

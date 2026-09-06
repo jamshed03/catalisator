@@ -4,11 +4,11 @@
 	"description": "",
 	"main": "",
 	"bin": {
-		"catalisator": "./bin/cli.js"
+		"catalisator": "./migrator/bin/cli.js"
 	},
 	"scripts": {
 		"test": "jest",
-		"build:css": "postcss \"css-src/utils/**/*.css\" --base css-src --dir css --config css-src"
+		"build:css": "postcss \"postcss/utils/**/*.css\" --base postcss --dir css --config postcss"
 	},
 	"keywords": [],
 	"author": "",

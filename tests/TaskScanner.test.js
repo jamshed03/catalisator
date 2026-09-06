@@ -1,4 +1,4 @@
-const TaskScanner = require('../lib/services/TaskScanner')
+const TaskScanner = require('../migrator/lib/services/TaskScanner')
 
 describe('TaskScanner', () => {
 	let scanner

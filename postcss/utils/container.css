@@ -1,5 +1,5 @@
-@import '../includes/variables.css';
-@import '../includes/mixins/breakpoints.css';
+@import '../variables.css';
+@import '../mixins/breakpoints.css';
 
 .u-container {
 	width: 100%;
@@ -10,19 +10,29 @@
 }
 
 @include media-breakpoint-up(sm) {
-	.u-container { max-width: $breakpoint-sm; }
+	.u-container {
+		max-width: $breakpoint-sm;
+	}
 }
 @include media-breakpoint-up(md) {
-	.u-container { max-width: $breakpoint-md; }
+	.u-container {
+		max-width: $breakpoint-md;
+	}
 }
 @include media-breakpoint-up(lg) {
-	.u-container { max-width: $breakpoint-lg; }
+	.u-container {
+		max-width: $breakpoint-lg;
+	}
 }
 @include media-breakpoint-up(xl) {
-	.u-container { max-width: $breakpoint-xl; }
+	.u-container {
+		max-width: $breakpoint-xl;
+	}
 }
 @include media-breakpoint-up(2xl) {
-	.u-container { max-width: $breakpoint-2xl; }
+	.u-container {
+		max-width: $breakpoint-2xl;
+	}
 }
 
 /* Fixed variants: capped at one breakpoint regardless of viewport, unlike

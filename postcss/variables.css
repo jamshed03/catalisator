@@ -1,6 +1,13 @@
 $rfs-base-value: 20;
 $rfs-factor: 10;
 
+$space-xs: 0.25rem;
+$space-sm: 0.5rem;
+$space-md: 1rem;
+$space-lg: 1.5rem;
+$space-xl: 2rem;
+$space-2xl: 3rem;
+
 $breakpoint-sm: 40em; /* 640px */
 $breakpoint-md: 48em; /* 768px */
 $breakpoint-lg: 64em; /* 1024px */

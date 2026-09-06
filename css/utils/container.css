@@ -9,15 +9,25 @@
 }
 
 @media (min-width: 40em) {
-	.u-container { max-width: 40em; } }
+	.u-container {
+		max-width: 40em;
+	} }
 @media (min-width: 48em) {
-	.u-container { max-width: 48em; } }
+	.u-container {
+		max-width: 48em;
+	} }
 @media (min-width: 64em) {
-	.u-container { max-width: 64em; } }
+	.u-container {
+		max-width: 64em;
+	} }
 @media (min-width: 80em) {
-	.u-container { max-width: 80em; } }
+	.u-container {
+		max-width: 80em;
+	} }
 @media (min-width: 96em) {
-	.u-container { max-width: 96em; } }
+	.u-container {
+		max-width: 96em;
+	} }
 
 /* Fixed variants: capped at one breakpoint regardless of viewport, unlike
    .u-container above which grows progressively through each @media step. */
