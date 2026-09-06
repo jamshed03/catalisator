@@ -88,6 +88,7 @@ Die drei Formate oben liefern die **komplette** Bibliothek (alle Klassen, auch u
 ```bash
 npx catalisator utils [dir]     # scannt [dir] (Default: ./src) nach genutzten u-*-Klassen
 npx catalisator utils --dry     # Testlauf, schreibt keine Datei
+npx catalisator utils --watch   # bleibt aktiv, regeneriert bei jeder Markup-Änderung automatisch (Strg+C zum Beenden)
 ```
 
 Der Scan durchsucht `.tsx`/`.jsx`/`.js`/`.vue`/`.html`-Dateien nach `class="..."`/`className="..."` und gleicht die gefundenen Klassennamen gegen die eigene `css/utils/`-Bibliothek ab. Nur die tatsächlich genutzten Klassen (inklusive aller ihrer responsiven `@media`-Varianten) landen in einer einzigen generierten Datei, die du wie gewohnt manuell importierst. Scan- und Ausgabeordner sind über `catalisator.config.json` konfigurierbar (ein `[dir]`-Argument auf der Kommandozeile überschreibt `utilsScanDir`):

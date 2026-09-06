@@ -1,3 +1,4 @@
+const fs = require('fs')
 const path = require('path')
 
 const ConfigService = require('../services/ConfigService')
@@ -6,11 +7,13 @@ const UtilsLibrary = require('../services/UtilsLibrary')
 
 const SCAN_EXTENSIONS = ['.tsx', '.jsx', '.js', '.vue', '.html']
 const CLASS_ATTR_REGEX = /\bclass(?:Name)?\s*=\s*(["'`])((?:(?!\1).)*)\1/g
+const WATCH_DEBOUNCE_MS = 150
 
 class UtilsCommand {
 	constructor() {
 		const args = process.argv.slice(2).filter((arg) => arg !== 'utils')
 		this.isDryRun = args.includes('--dry')
+		this.isWatch = args.includes('--watch')
 		const cliTargetDir = args.find((arg) => !arg.startsWith('--'))
 
 		this.initConfig()
@@ -84,9 +87,7 @@ class UtilsCommand {
 		return output.trim() + '\n'
 	}
 
-	execute() {
-		console.log(`\n=========================================\n ⚡ CATALISATOR Utils \n=========================================\n`)
-
+	runOnce() {
 		const catalog = UtilsLibrary.build()
 		console.log(`🔍 Scanne '${this.targetDir}' nach genutzten Utility-Klassen...`)
 		const used = this.scanUsedClasses(catalog)
@@ -105,7 +106,33 @@ class UtilsCommand {
 		this.fileService.writeFile(outputPath, output)
 
 		console.log(`\n✅ Geschrieben: ${outputPath}`)
-		console.log(`\n🎉 Importiere die Datei manuell in dein globales Stylesheet.\n`)
+	}
+
+	startWatching() {
+		console.log(`\n👀 Watch-Modus aktiv — beobachte '${this.targetDir}' auf Änderungen... (Strg+C zum Beenden)`)
+
+		let timeout = null
+		fs.watch(this.targetDir, { recursive: true }, (_eventType, filename) => {
+			if (filename && !SCAN_EXTENSIONS.some((ext) => filename.endsWith(ext))) return
+
+			clearTimeout(timeout)
+			timeout = setTimeout(() => {
+				console.log(`\n🔄 Änderung erkannt${filename ? ` (${filename})` : ''}, aktualisiere...\n`)
+				this.runOnce()
+			}, WATCH_DEBOUNCE_MS)
+		})
+	}
+
+	execute() {
+		console.log(`\n=========================================\n ⚡ CATALISATOR Utils \n=========================================\n`)
+
+		this.runOnce()
+
+		if (this.isWatch) {
+			this.startWatching()
+		} else {
+			console.log(`\n🎉 Importiere die Datei manuell in dein globales Stylesheet.\n`)
+		}
 	}
 }
 

@@ -98,6 +98,49 @@ describe('UtilsCommand', () => {
 		expect(outputPath).toContain(`${path.sep}app${path.sep}styles${path.sep}`)
 	})
 
+	test('--watch sets up fs.watch on the target dir and re-runs (debounced) on a matching file change', () => {
+		jest.useFakeTimers()
+		let watchCallback
+		fs.watch.mockImplementation((dir, options, callback) => {
+			watchCallback = callback
+		})
+
+		process.argv = ['node', 'cli.js', 'utils', '--watch']
+		const cmd = new UtilsCommand()
+		cmd.execute()
+
+		expect(fs.watch).toHaveBeenCalledWith('./src', { recursive: true }, expect.any(Function))
+		expect(fs.writeFileSync).toHaveBeenCalledTimes(1)
+
+		watchCallback('change', 'Page.jsx')
+		jest.advanceTimersByTime(200)
+
+		expect(fs.writeFileSync).toHaveBeenCalledTimes(2)
+
+		jest.useRealTimers()
+	})
+
+	test('--watch ignores changes to files with an unrelated extension', () => {
+		jest.useFakeTimers()
+		let watchCallback
+		fs.watch.mockImplementation((dir, options, callback) => {
+			watchCallback = callback
+		})
+
+		process.argv = ['node', 'cli.js', 'utils', '--watch']
+		const cmd = new UtilsCommand()
+		cmd.execute()
+
+		expect(fs.writeFileSync).toHaveBeenCalledTimes(1)
+
+		watchCallback('change', 'styles.css')
+		jest.advanceTimersByTime(200)
+
+		expect(fs.writeFileSync).toHaveBeenCalledTimes(1)
+
+		jest.useRealTimers()
+	})
+
 	test('a CLI directory argument overrides utilsScanDir from config', () => {
 		fs.existsSync.mockImplementation((p) => !String(p).endsWith('catalisator.config.json') || true)
 		fs.readFileSync.mockImplementation((p) => {
