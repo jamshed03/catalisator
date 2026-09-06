@@ -14,6 +14,12 @@ const FAKE_CATALOG = new Map([
 		{ media: '(min-width: 40em)', decls: 'max-width: 40em;' },
 	]],
 	['u-col-md-6', [{ media: '(min-width: 48em)', decls: 'flex: 0 0 50%;' }]],
+	// mirrors row.css's real structure: a shared multi-selector rule (width/padding)
+	// plus the class's own rule (flex/max-width), both with media: null
+	['u-col-12', [
+		{ media: null, decls: 'width: 100%;\npadding-left: calc(var(--u-space-md, 1rem)/2);' },
+		{ media: null, decls: 'flex: 0 0 100%;\nmax-width: 100%;' },
+	]],
 ])
 
 describe('UtilsCommand', () => {
@@ -50,6 +56,17 @@ describe('UtilsCommand', () => {
 		expect(output).toContain('.u-container {\n\twidth: 100%;\n}')
 		expect(output).toMatch(/@media \(min-width: 40em\) \{\n\t\.u-container \{\n\t\tmax-width: 40em;\n\t\}\n\}/)
 		expect(output).toMatch(/@media \(min-width: 48em\) \{\n\t\.u-col-md-6 \{\n\t\tflex: 0 0 50%;\n\t\}\n\}/)
+	})
+
+	test('buildOutput merges multiple non-media declaration blocks for the same class into one rule (regression: row.css duplicate .u-col-12)', () => {
+		process.argv = ['node', 'cli.js', 'utils']
+		const cmd = new UtilsCommand()
+		const output = cmd.buildOutput(FAKE_CATALOG, new Set(['u-col-12']))
+
+		expect(output.match(/\.u-col-12 \{/g)).toHaveLength(1)
+		expect(output).toBe(
+			'.u-col-12 {\n\twidth: 100%;\n\tpadding-left: calc(var(--u-space-md, 1rem)/2);\n\tflex: 0 0 100%;\n\tmax-width: 100%;\n}\n'
+		)
 	})
 
 	test('dry run does not call writeFileSync', () => {

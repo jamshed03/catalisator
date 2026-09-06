@@ -55,17 +55,14 @@ class UtilsCommand {
 	}
 
 	buildOutput(catalog, usedClasses) {
-		const topLevel = []
-		const mediaGroups = new Map() // media params -> [{ name, decls }]
+		const topLevel = new Map()
+		const mediaGroups = new Map() // media params -> Map<name, decl-block[]>
 
 		for (const name of usedClasses) {
 			for (const { media, decls } of catalog.get(name)) {
-				if (media === null) {
-					topLevel.push({ name, decls })
-				} else {
-					if (!mediaGroups.has(media)) mediaGroups.set(media, [])
-					mediaGroups.get(media).push({ name, decls })
-				}
+				const group = media === null ? topLevel : mediaGroups.get(media) || mediaGroups.set(media, new Map()).get(media)
+				if (!group.has(name)) group.set(name, [])
+				group.get(name).push(decls)
 			}
 		}
 
@@ -77,10 +74,12 @@ class UtilsCommand {
 				.join('\n')
 		}
 
-		let output = topLevel.map(({ name, decls }) => `.${name} {\n${indent(decls, 1)}\n}`).join('\n\n')
+		const renderRule = (name, declBlocks) => `.${name} {\n${indent(declBlocks.join('\n'), 1)}\n}`
 
-		for (const [media, rules] of mediaGroups) {
-			const body = rules.map(({ name, decls }) => `${indent(`.${name} {\n${indent(decls, 1)}\n}`, 1)}`).join('\n')
+		let output = [...topLevel].map(([name, declBlocks]) => renderRule(name, declBlocks)).join('\n\n')
+
+		for (const [media, group] of mediaGroups) {
+			const body = [...group].map(([name, declBlocks]) => indent(renderRule(name, declBlocks), 1)).join('\n')
 			output += `\n\n@media ${media} {\n${body}\n}`
 		}
 
