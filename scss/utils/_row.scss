@@ -1,3 +1,5 @@
+/* 640px */ /* 768px */ /* 1024px */ /* 1280px */ /* 1536px */
+
 .u-row {
 	display: flex;
 	flex-wrap: wrap;
@@ -70,3 +72,73 @@
 	flex: 0 0 100%;
 	max-width: 100%;
 }
+
+@media (min-width: 40em) {
+	.u-col-sm-1 { flex: 0 0 8.3333333333%; max-width: 8.3333333333%; }
+	.u-col-sm-2 { flex: 0 0 16.6666666667%; max-width: 16.6666666667%; }
+	.u-col-sm-3 { flex: 0 0 25%; max-width: 25%; }
+	.u-col-sm-4 { flex: 0 0 33.3333333333%; max-width: 33.3333333333%; }
+	.u-col-sm-5 { flex: 0 0 41.6666666667%; max-width: 41.6666666667%; }
+	.u-col-sm-6 { flex: 0 0 50%; max-width: 50%; }
+	.u-col-sm-7 { flex: 0 0 58.3333333333%; max-width: 58.3333333333%; }
+	.u-col-sm-8 { flex: 0 0 66.6666666667%; max-width: 66.6666666667%; }
+	.u-col-sm-9 { flex: 0 0 75%; max-width: 75%; }
+	.u-col-sm-10 { flex: 0 0 83.3333333333%; max-width: 83.3333333333%; }
+	.u-col-sm-11 { flex: 0 0 91.6666666667%; max-width: 91.6666666667%; }
+	.u-col-sm-12 { flex: 0 0 100%; max-width: 100%; } }
+
+@media (min-width: 48em) {
+	.u-col-md-1 { flex: 0 0 8.3333333333%; max-width: 8.3333333333%; }
+	.u-col-md-2 { flex: 0 0 16.6666666667%; max-width: 16.6666666667%; }
+	.u-col-md-3 { flex: 0 0 25%; max-width: 25%; }
+	.u-col-md-4 { flex: 0 0 33.3333333333%; max-width: 33.3333333333%; }
+	.u-col-md-5 { flex: 0 0 41.6666666667%; max-width: 41.6666666667%; }
+	.u-col-md-6 { flex: 0 0 50%; max-width: 50%; }
+	.u-col-md-7 { flex: 0 0 58.3333333333%; max-width: 58.3333333333%; }
+	.u-col-md-8 { flex: 0 0 66.6666666667%; max-width: 66.6666666667%; }
+	.u-col-md-9 { flex: 0 0 75%; max-width: 75%; }
+	.u-col-md-10 { flex: 0 0 83.3333333333%; max-width: 83.3333333333%; }
+	.u-col-md-11 { flex: 0 0 91.6666666667%; max-width: 91.6666666667%; }
+	.u-col-md-12 { flex: 0 0 100%; max-width: 100%; } }
+
+@media (min-width: 64em) {
+	.u-col-lg-1 { flex: 0 0 8.3333333333%; max-width: 8.3333333333%; }
+	.u-col-lg-2 { flex: 0 0 16.6666666667%; max-width: 16.6666666667%; }
+	.u-col-lg-3 { flex: 0 0 25%; max-width: 25%; }
+	.u-col-lg-4 { flex: 0 0 33.3333333333%; max-width: 33.3333333333%; }
+	.u-col-lg-5 { flex: 0 0 41.6666666667%; max-width: 41.6666666667%; }
+	.u-col-lg-6 { flex: 0 0 50%; max-width: 50%; }
+	.u-col-lg-7 { flex: 0 0 58.3333333333%; max-width: 58.3333333333%; }
+	.u-col-lg-8 { flex: 0 0 66.6666666667%; max-width: 66.6666666667%; }
+	.u-col-lg-9 { flex: 0 0 75%; max-width: 75%; }
+	.u-col-lg-10 { flex: 0 0 83.3333333333%; max-width: 83.3333333333%; }
+	.u-col-lg-11 { flex: 0 0 91.6666666667%; max-width: 91.6666666667%; }
+	.u-col-lg-12 { flex: 0 0 100%; max-width: 100%; } }
+
+@media (min-width: 80em) {
+	.u-col-xl-1 { flex: 0 0 8.3333333333%; max-width: 8.3333333333%; }
+	.u-col-xl-2 { flex: 0 0 16.6666666667%; max-width: 16.6666666667%; }
+	.u-col-xl-3 { flex: 0 0 25%; max-width: 25%; }
+	.u-col-xl-4 { flex: 0 0 33.3333333333%; max-width: 33.3333333333%; }
+	.u-col-xl-5 { flex: 0 0 41.6666666667%; max-width: 41.6666666667%; }
+	.u-col-xl-6 { flex: 0 0 50%; max-width: 50%; }
+	.u-col-xl-7 { flex: 0 0 58.3333333333%; max-width: 58.3333333333%; }
+	.u-col-xl-8 { flex: 0 0 66.6666666667%; max-width: 66.6666666667%; }
+	.u-col-xl-9 { flex: 0 0 75%; max-width: 75%; }
+	.u-col-xl-10 { flex: 0 0 83.3333333333%; max-width: 83.3333333333%; }
+	.u-col-xl-11 { flex: 0 0 91.6666666667%; max-width: 91.6666666667%; }
+	.u-col-xl-12 { flex: 0 0 100%; max-width: 100%; } }
+
+@media (min-width: 96em) {
+	.u-col-2xl-1 { flex: 0 0 8.3333333333%; max-width: 8.3333333333%; }
+	.u-col-2xl-2 { flex: 0 0 16.6666666667%; max-width: 16.6666666667%; }
+	.u-col-2xl-3 { flex: 0 0 25%; max-width: 25%; }
+	.u-col-2xl-4 { flex: 0 0 33.3333333333%; max-width: 33.3333333333%; }
+	.u-col-2xl-5 { flex: 0 0 41.6666666667%; max-width: 41.6666666667%; }
+	.u-col-2xl-6 { flex: 0 0 50%; max-width: 50%; }
+	.u-col-2xl-7 { flex: 0 0 58.3333333333%; max-width: 58.3333333333%; }
+	.u-col-2xl-8 { flex: 0 0 66.6666666667%; max-width: 66.6666666667%; }
+	.u-col-2xl-9 { flex: 0 0 75%; max-width: 75%; }
+	.u-col-2xl-10 { flex: 0 0 83.3333333333%; max-width: 83.3333333333%; }
+	.u-col-2xl-11 { flex: 0 0 91.6666666667%; max-width: 91.6666666667%; }
+	.u-col-2xl-12 { flex: 0 0 100%; max-width: 100%; } }
