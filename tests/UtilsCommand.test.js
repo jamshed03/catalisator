@@ -14,8 +14,8 @@ const FAKE_CATALOG = new Map([
 		{ media: '(min-width: 40em)', decls: 'max-width: 40em;' },
 	]],
 	['u-col-md-6', [{ media: '(min-width: 48em)', decls: 'flex: 0 0 50%;' }]],
-	// mirrors row.css's real structure: a shared multi-selector rule (width/padding)
-	// plus the class's own rule (flex/max-width), both with media: null
+	// synthetic case for the merge regression: two separate declaration blocks
+	// registered under the same class name and media: null
 	['u-col-12', [
 		{ media: null, decls: 'width: 100%;\npadding-left: calc(var(--u-space-md, 1rem)/2);' },
 		{ media: null, decls: 'flex: 0 0 100%;\nmax-width: 100%;' },

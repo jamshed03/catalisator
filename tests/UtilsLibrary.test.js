@@ -15,7 +15,7 @@ describe('UtilsLibrary', () => {
 		const variants = catalog.get('u-col-md-6')
 		expect(variants).toHaveLength(1)
 		expect(variants[0].media).toBe('(min-width: 48em)')
-		expect(variants[0].decls).toContain('flex: 0 0 50%')
+		expect(variants[0].decls).toContain('grid-column: span 6 / span 6')
 	})
 
 	test('registers every progressive breakpoint variant of a repeated selector like .u-container', () => {
