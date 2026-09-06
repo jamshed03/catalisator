@@ -104,6 +104,37 @@ Der Scan durchsucht `.tsx`/`.jsx`/`.js`/`.vue`/`.html`-Dateien nach `class="..."
 
 `stylesheet` (bereits von `migrate` bekannt) entscheidet auch hier über `.css` vs. `.scss` — der Dateiinhalt ist identisch, nur die Endung unterscheidet sich. Das generierte File ist komplett statisch: entfernst du `catalisator` später, bleibt es unverändert funktionsfähig.
 
+### Mixins exportieren
+
+Willst du nicht nur die fertigen Utility-Klassen, sondern die **rohen Mixins selbst** (`media-breakpoint-up`, `rfs-calc`, `padding`/`margin`/`font-size`/`gap`-Shortcuts) in deinem eigenen Code weiterverwenden, kopiert `catalisator mixins` sie in einen Ordner deiner Wahl:
+
+```bash
+npx catalisator mixins          # Default: scss-Format nach ./src/styles/catalisator-mixins
+npx catalisator mixins --dry    # Testlauf, schreibt keine Dateien
+```
+
+```json
+{
+	"mixinsFormat": "scss",
+	"mixinsOutputBase": "./src/styles/catalisator-mixins"
+}
+```
+
+- `mixinsFormat: "scss"` (Default) — echtes Sass, sofort mit jedem Sass-Compiler nutzbar, keine weiteren Abhängigkeiten.
+- `mixinsFormat: "postcss"` — die PostCSS-Dialekt-Version; setzt voraus, dass dein eigener Build bereits `postcss-import`, `postcss-advanced-variables`, `postcss-calc`, `postcss-nested` und `postcss-functions` (mit einer `stripUnit`-Funktion) registriert hat.
+
+Die relative Ordnerstruktur (`mixins/` als Unterordner neben der Variablen-Datei) bleibt beim Kopieren erhalten, damit die internen `@use`/`@import`-Pfade der Mixins weiterhin auflösen. Anschließend importierst du z. B.:
+
+```scss
+@use './styles/catalisator-mixins/mixins/breakpoints' as *;
+
+.my-hero {
+	@include media-breakpoint-up(lg) {
+		display: flex;
+	}
+}
+```
+
 ### Design-Tokens (`css/variables.css`)
 
 Enthält eine gemeinsame Spacing-Skala als CSS Custom Properties, die `container`/`grid`/`flex` intern nutzen (z. B. `gap`, `padding`):
