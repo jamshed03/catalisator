@@ -1,0 +1,24 @@
+.u-d-none {
+	display: none;
+}
+.u-d-block {
+	display: block;
+}
+.u-d-inline {
+	display: inline;
+}
+.u-d-inline-block {
+	display: inline-block;
+}
+.u-d-flex {
+	display: flex;
+}
+.u-d-inline-flex {
+	display: inline-flex;
+}
+.u-d-grid {
+	display: grid;
+}
+.u-d-inline-grid {
+	display: inline-grid;
+}
