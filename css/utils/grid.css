@@ -26,13 +26,13 @@
 	gap: 0;
 }
 .u-gap-sm {
-	gap: 0.5rem;
+	gap: var(--u-space-sm, 0.5rem);
 }
 .u-gap-md {
-	gap: 1rem;
+	gap: var(--u-space-md, 1rem);
 }
 .u-gap-lg {
-	gap: 1.5rem;
+	gap: var(--u-space-lg, 1.5rem);
 }
 .u-place-items-center {
 	place-items: center;

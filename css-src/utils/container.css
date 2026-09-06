@@ -1,0 +1,51 @@
+@import '../includes/variables.css';
+@import '../includes/mixins/breakpoints.css';
+
+.u-container {
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: var(--u-space-md, 1rem);
+	padding-right: var(--u-space-md, 1rem);
+}
+
+@include media-breakpoint-up(sm) {
+	.u-container { max-width: $breakpoint-sm; }
+}
+@include media-breakpoint-up(md) {
+	.u-container { max-width: $breakpoint-md; }
+}
+@include media-breakpoint-up(lg) {
+	.u-container { max-width: $breakpoint-lg; }
+}
+@include media-breakpoint-up(xl) {
+	.u-container { max-width: $breakpoint-xl; }
+}
+@include media-breakpoint-up(2xl) {
+	.u-container { max-width: $breakpoint-2xl; }
+}
+
+/* Fixed variants: capped at one breakpoint regardless of viewport, unlike
+   .u-container above which grows progressively through each @media step. */
+.u-container-sm {
+	max-width: $breakpoint-sm;
+}
+.u-container-md {
+	max-width: $breakpoint-md;
+}
+.u-container-lg {
+	max-width: $breakpoint-lg;
+}
+.u-container-xl {
+	max-width: $breakpoint-xl;
+}
+.u-container-2xl {
+	max-width: $breakpoint-2xl;
+}
+.u-container-fluid {
+	max-width: 100%;
+}
+.u-container-no-padding {
+	padding-left: 0;
+	padding-right: 0;
+}

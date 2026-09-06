@@ -1,0 +1,14 @@
+:root {
+	--u-space-xs: 0.25rem;
+	--u-space-sm: 0.5rem;
+	--u-space-md: 1rem;
+	--u-space-lg: 1.5rem;
+	--u-space-xl: 2rem;
+	--u-space-2xl: 3rem;
+
+	--u-breakpoint-sm: 40em;
+	--u-breakpoint-md: 48em;
+	--u-breakpoint-lg: 64em;
+	--u-breakpoint-xl: 80em;
+	--u-breakpoint-2xl: 96em;
+}

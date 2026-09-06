@@ -1,0 +1,49 @@
+@import './rfs.css';
+
+@mixin padding($value) {
+    @include rfs-calc(padding, $value);
+}
+
+@mixin padding-top($value) {
+    @include rfs-calc(padding-top, $value);
+}
+
+@mixin padding-right($value) {
+    @include rfs-calc(padding-right, $value);
+}
+
+@mixin padding-bottom($value) {
+    @include rfs-calc(padding-bottom, $value);
+}
+
+@mixin padding-left($value) {
+    @include rfs-calc(padding-left, $value);
+}
+
+@mixin margin($value) {
+    @include rfs-calc(margin, $value);
+}
+
+@mixin margin-top($value) {
+    @include rfs-calc(margin-top, $value);
+}
+
+@mixin margin-right($value) {
+    @include rfs-calc(margin-right, $value);
+}
+
+@mixin margin-bottom($value) {
+    @include rfs-calc(margin-bottom, $value);
+}
+
+@mixin margin-left($value) {
+    @include rfs-calc(margin-left, $value);
+}
+
+@mixin font-size($value) {
+    @include rfs-calc(font-size, $value);
+}
+
+@mixin gap($value) {
+    @include rfs-calc(gap, $value);
+}
