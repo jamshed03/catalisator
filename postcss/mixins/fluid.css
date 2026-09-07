@@ -1,0 +1,8 @@
+@import '../variables.css';
+
+@mixin fluid($property, $min, $max) {
+	$slope: calc(($max - $min) / ($fluid-max-vw - $fluid-min-vw));
+	$intercept: calc(($min - ($(slope) * $fluid-min-vw)) / 16);
+
+	$(property): clamp(calc($min / 16 * 1rem), calc($(intercept) * 1rem + ($(slope) * 100) * 1vw), calc($max / 16 * 1rem));
+}

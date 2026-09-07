@@ -4,8 +4,8 @@ const ConfigService = require('../services/ConfigService')
 const FileService = require('../services/FileService')
 
 const MIXIN_FILES = {
-	scss: ['_variables.scss', 'mixins/_breakpoints.scss', 'mixins/_rfs.scss', 'mixins/_shortcuts.scss'],
-	postcss: ['variables.css', 'mixins/breakpoints.css', 'mixins/rfs.css', 'mixins/shortcuts.css'],
+	scss: ['_variables.scss', 'mixins/_breakpoints.scss', 'mixins/_fluid.scss', 'mixins/_rfs.scss', 'mixins/_shortcuts.scss'],
+	postcss: ['variables.css', 'mixins/breakpoints.css', 'mixins/fluid.css', 'mixins/rfs.css', 'mixins/shortcuts.css'],
 }
 
 class MixinsCommand {

@@ -1,0 +1,9 @@
+@use 'sass:math';
+@use '../variables' as *;
+
+@mixin fluid($property, $min, $max) {
+	$slope: math.div($max - $min, $fluid-max-vw - $fluid-min-vw);
+	$intercept: math.div($min - ($slope * $fluid-min-vw), 16);
+
+	#{$property}: clamp(#{math.div($min, 16)}rem, calc(#{$intercept}rem + #{$slope * 100}vw), #{math.div($max, 16)}rem);
+}

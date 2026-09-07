@@ -18,15 +18,16 @@ describe('MixinsCommand', () => {
 		process.argv = originalArgv
 	})
 
-	test('defaults to scss format, copying the 4 mixin/variable partials preserving their relative layout', () => {
+	test('defaults to scss format, copying the 5 mixin/variable partials preserving their relative layout', () => {
 		process.argv = ['node', 'cli.js', 'mixins']
 		const cmd = new MixinsCommand()
 		cmd.execute()
 
-		expect(fs.writeFileSync).toHaveBeenCalledTimes(4)
+		expect(fs.writeFileSync).toHaveBeenCalledTimes(5)
 		const written = fs.writeFileSync.mock.calls.map(([p]) => p)
 		expect(written.some((p) => p.endsWith(`${path.sep}_variables.scss`))).toBe(true)
 		expect(written.some((p) => p.endsWith(path.join('mixins', '_breakpoints.scss')))).toBe(true)
+		expect(written.some((p) => p.endsWith(path.join('mixins', '_fluid.scss')))).toBe(true)
 		expect(written.some((p) => p.endsWith(path.join('mixins', '_rfs.scss')))).toBe(true)
 		expect(written.some((p) => p.endsWith(path.join('mixins', '_shortcuts.scss')))).toBe(true)
 	})
@@ -44,11 +45,12 @@ describe('MixinsCommand', () => {
 		const cmd = new MixinsCommand()
 		cmd.execute()
 
-		expect(fs.writeFileSync).toHaveBeenCalledTimes(4)
+		expect(fs.writeFileSync).toHaveBeenCalledTimes(5)
 		const written = fs.writeFileSync.mock.calls.map(([p]) => p)
 		expect(written.every((p) => p.includes(path.join('styles', 'mixins-pc')))).toBe(true)
 		expect(written.some((p) => p.endsWith(`${path.sep}variables.css`))).toBe(true)
 		expect(written.some((p) => p.endsWith(path.join('mixins', 'breakpoints.css')))).toBe(true)
+		expect(written.some((p) => p.endsWith(path.join('mixins', 'fluid.css')))).toBe(true)
 	})
 
 	test('falls back to scss for an unknown mixinsFormat', () => {

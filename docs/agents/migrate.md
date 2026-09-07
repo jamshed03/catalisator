@@ -127,8 +127,8 @@ Kopiert die **rohen Mixins** (nicht die fertigen Klassen) ins Projekt, damit sie
 Werten verwendet werden können. Es gibt hier nichts zu tree-shaken — Mixins werden mit
 beliebigen Argumenten aufgerufen —, daher wird schlicht ein fester Dateisatz kopiert:
 
-- `scss`-Format: `_variables.scss`, `mixins/_breakpoints.scss`, `mixins/_rfs.scss`, `mixins/_shortcuts.scss`
-- `postcss`-Format: `variables.css`, `mixins/breakpoints.css`, `mixins/rfs.css`, `mixins/shortcuts.css`
+- `scss`-Format: `_variables.scss`, `mixins/_breakpoints.scss`, `mixins/_fluid.scss`, `mixins/_rfs.scss`, `mixins/_shortcuts.scss`
+- `postcss`-Format: `variables.css`, `mixins/breakpoints.css`, `mixins/fluid.css`, `mixins/rfs.css`, `mixins/shortcuts.css`
 
 Die relative Ordnerstruktur bleibt erhalten (die Mixins referenzieren `../variables` intern) —
 Dateien nach dem Kopieren also nicht umsortieren.
@@ -159,7 +159,22 @@ Nutzung nach dem Export:
 }
 ```
 
-**Hinweis:** Die RFS-Mixins (`rfs`, `shortcuts`) werden derzeit auf einen expliziten
-`fluid`-Ansatz umgebaut — die API kann sich also noch ändern. Die Skalierung selbst ist korrekt:
-`@include font-size(32)` ergibt `clamp(1.325rem, calc(0.84375vw + 1.325rem), 2rem)`, d. h. der
-Maximalwert wird bei 1280px Viewport erreicht (steuerbar über `$rfs-max-breakpoint`).
+Verfügbare Mixins:
+
+| Mixin | Zweck |
+|---|---|
+| `media-breakpoint-up($bp)` / `-down($bp)` | Media Queries per Breakpoint-Name (`sm`…`2xl`) |
+| `fluid($property, $min, $max)` | **empfohlen** — lineare Skalierung zwischen zwei selbst gewählten px-Werten, von `$fluid-min-vw` (375) bis `$fluid-max-vw` (1440) |
+| `rfs-calc($property, $max)` bzw. die Shortcuts `font-size()`, `padding()`, `margin()`, `gap()` | Bootstrap-RFS-Stil: nur das Maximum wird angegeben, das Minimum leitet sich aus `$rfs-base-value`/`$rfs-factor` ab |
+
+`fluid` und `rfs-calc` lösen dieselbe Aufgabe unterschiedlich: `rfs-calc` bestimmt das Minimum
+selbst (bei `$rfs-factor: 10` schrumpft ein 112px-Wert auf ~29px), `fluid` nimmt beide Endpunkte
+vom Aufrufer. Wenn dein Design konkrete Mobile-Werte vorgibt, nimm `fluid`:
+
+```scss
+@include fluid(font-size, 44, 112);
+// → clamp(2.75rem, calc(1.25352rem + 6.38498vw), 7rem)
+```
+
+**Hinweis:** Die RFS-Mixins werden schrittweise von `fluid` abgelöst — ihre API kann sich noch
+ändern. `fluid` selbst ist stabil.
