@@ -1,22 +1,23 @@
 @import '../variables.css';
 
 /* Bootstrap */
+
 @mixin rfs-calc($property, $max-value) {
-    $factor: stripUnit($rfs-factor);
-    $base-value: stripUnit($rfs-base-value);
-    $max-breakpoint: stripUnit($rfs-max-breakpoint);
-    $max-val-num: stripUnit($max-value);
+	$factor: stripUnit($rfs-factor);
+	$base-value: stripUnit($rfs-base-value);
+	$max-breakpoint: stripUnit($rfs-max-breakpoint);
+	$max-val-num: stripUnit($max-value);
 
-    @if $max-val-num > $base-value {
-        $min-value: calc($(base-value) + (($(max-val-num) - $(base-value)) / $(factor)));
-        $slope: calc(($(max-val-num) - $(min-value)) / $(max-breakpoint));
+	@if $max-value > $rfs-base-value {
+		$min-value: calc($(base-value) + (($(max-val-num) - $(base-value)) / $(factor)));
+		$slope: calc(($(max-val-num) - $(min-value)) / $(max-breakpoint));
 
-        $min: calc(($(min-value) / 16) * 1rem);
-        $max: calc(($(max-val-num) / 16) * 1rem);
-        $slope-vw: calc(($(slope) * 100) * 1vw);
+		$min: calc(($(min-value) / 16) * 1rem);
+		$max: calc(($(max-val-num) / 16) * 1rem);
+		$slope-vw: calc(($(slope) * 100) * 1vw);
 
-        $(property): clamp($(min), calc($(slope-vw) + $(min)), $(max));
-    } @else  {
-        $(property): calc(($(max-val-num) / 16) * 1rem);
-    }
+		$(property): clamp($(min), calc($(slope-vw) + $(min)), $(max));
+	} @else  {
+		$(property): calc(($(max-val-num) / 16) * 1rem);
+	}
 }
