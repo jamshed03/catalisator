@@ -159,6 +159,7 @@ Nutzung nach dem Export:
 }
 ```
 
-**Hinweis:** Die RFS-Mixins (`rfs`, `shortcuts`) werden derzeit überarbeitet und haben einen
-bekannten Rechenfehler in der Slope-Berechnung. Für stabilen Code besser
-`media-breakpoint-up`/`-down` verwenden.
+**Hinweis:** Die RFS-Mixins (`rfs`, `shortcuts`) werden derzeit auf einen expliziten
+`fluid`-Ansatz umgebaut — die API kann sich also noch ändern. Die Skalierung selbst ist korrekt:
+`@include font-size(32)` ergibt `clamp(1.325rem, calc(0.84375vw + 1.325rem), 2rem)`, d. h. der
+Maximalwert wird bei 1280px Viewport erreicht (steuerbar über `$rfs-max-breakpoint`).

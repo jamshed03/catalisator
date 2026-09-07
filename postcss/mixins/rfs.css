@@ -4,7 +4,7 @@
 @mixin rfs-calc($property, $max-value) {
     $factor: stripUnit($rfs-factor);
     $base-value: stripUnit($rfs-base-value);
-    $max-breakpoint: stripUnit($breakpoint-xl);
+    $max-breakpoint: stripUnit($rfs-max-breakpoint);
     $max-val-num: stripUnit($max-value);
 
     @if $max-val-num > $base-value {
