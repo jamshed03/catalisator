@@ -56,15 +56,25 @@ class UtilsCommand {
 
 	buildOutput(catalog, usedClasses) {
 		const topLevel = new Map()
-		const mediaGroups = new Map() // media params -> Map<name, decl-block[]>
+		const mediaGroups = new Map()
+		const rank = new Map()
 
 		for (const name of usedClasses) {
-			for (const { media, decls } of catalog.get(name)) {
+			for (const { media, decls, order } of catalog.get(name)) {
 				const group = media === null ? topLevel : mediaGroups.get(media) || mediaGroups.set(media, new Map()).get(media)
 				if (!group.has(name)) group.set(name, [])
 				group.get(name).push(decls)
+
+				const key = media === null ? `\u0000${name}` : `${media}\u0000${name}`
+				if (!rank.has(key) || order < rank.get(key)) rank.set(key, order)
+				if (media !== null && (!rank.has(media) || order < rank.get(media))) rank.set(media, order)
 			}
 		}
+
+		const byRank =
+			(prefix) =>
+			([a], [b]) =>
+				rank.get(`${prefix}\u0000${a}`) - rank.get(`${prefix}\u0000${b}`)
 
 		const indent = (text, level) => {
 			const tabs = '\t'.repeat(level)
@@ -76,10 +86,16 @@ class UtilsCommand {
 
 		const renderRule = (name, declBlocks) => `.${name} {\n${indent(declBlocks.join('\n'), 1)}\n}`
 
-		let output = [...topLevel].map(([name, declBlocks]) => renderRule(name, declBlocks)).join('\n\n')
+		let output = [...topLevel]
+			.sort(byRank(''))
+			.map(([name, declBlocks]) => renderRule(name, declBlocks))
+			.join('\n\n')
 
-		for (const [media, group] of mediaGroups) {
-			const body = [...group].map(([name, declBlocks]) => indent(renderRule(name, declBlocks), 1)).join('\n')
+		for (const [media, group] of [...mediaGroups].sort(([a], [b]) => rank.get(a) - rank.get(b))) {
+			const body = [...group]
+				.sort(byRank(media))
+				.map(([name, declBlocks]) => indent(renderRule(name, declBlocks), 1))
+				.join('\n')
 			output += `\n\n@media ${media} {\n${body}\n}`
 		}
 

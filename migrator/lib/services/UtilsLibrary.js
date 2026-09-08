@@ -5,7 +5,8 @@ const postcss = require('postcss')
 class UtilsLibrary {
 	static build() {
 		const utilsDir = path.join(__dirname, '../../../css/utils')
-		const catalog = new Map() // className -> Array<{ media: string|null, decls: string }>
+		const catalog = new Map()
+		let order = 0
 
 		for (const file of fs.readdirSync(utilsDir).filter((f) => f.endsWith('.css'))) {
 			const root = postcss.parse(fs.readFileSync(path.join(utilsDir, file), 'utf8'))
@@ -19,7 +20,7 @@ class UtilsLibrary {
 
 					const name = match[1]
 					if (!catalog.has(name)) catalog.set(name, [])
-					catalog.get(name).push({ media, decls })
+					catalog.get(name).push({ media, decls, order: order++ })
 				}
 			})
 		}

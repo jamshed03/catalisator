@@ -9,17 +9,23 @@ const UtilsCommand = require('../migrator/lib/commands/UtilsCommand')
 
 const FAKE_CATALOG = new Map([
 	['u-flex', [{ media: null, decls: 'display: flex;' }]],
-	['u-container', [
-		{ media: null, decls: 'width: 100%;' },
-		{ media: '(min-width: 40em)', decls: 'max-width: 40em;' },
-	]],
+	[
+		'u-container',
+		[
+			{ media: null, decls: 'width: 100%;' },
+			{ media: '(min-width: 40em)', decls: 'max-width: 40em;' },
+		],
+	],
 	['u-col-md-6', [{ media: '(min-width: 48em)', decls: 'flex: 0 0 50%;' }]],
 	// synthetic case for the merge regression: two separate declaration blocks
 	// registered under the same class name and media: null
-	['u-col-12', [
-		{ media: null, decls: 'width: 100%;\npadding-left: calc(var(--u-space-md, 1rem)/2);' },
-		{ media: null, decls: 'flex: 0 0 100%;\nmax-width: 100%;' },
-	]],
+	[
+		'u-col-12',
+		[
+			{ media: null, decls: 'width: 100%;\npadding-left: calc(var(--u-space-md, 1rem)/2);' },
+			{ media: null, decls: 'flex: 0 0 100%;\nmax-width: 100%;' },
+		],
+	],
 ])
 
 describe('UtilsCommand', () => {
@@ -58,15 +64,29 @@ describe('UtilsCommand', () => {
 		expect(output).toMatch(/@media \(min-width: 48em\) \{\n\t\.u-col-md-6 \{\n\t\tflex: 0 0 50%;\n\t\}\n\}/)
 	})
 
+	test('buildOutput emits rules in library source order, not in the order the scan met them', () => {
+		const catalog = new Map([
+			['u-col-3', [{ media: null, decls: 'grid-column: span 3 / span 3;', order: 3 }]],
+			['u-col-start-10', [{ media: null, decls: 'grid-column-start: 10;', order: 20 }]],
+			['u-col-md-3', [{ media: '(min-width: 48em)', decls: 'grid-column: span 3 / span 3;', order: 40 }]],
+			['u-col-start-md-10', [{ media: '(min-width: 48em)', decls: 'grid-column-start: 10;', order: 60 }]],
+		])
+
+		process.argv = ['node', 'cli.js', 'utils']
+		const cmd = new UtilsCommand()
+		const output = cmd.buildOutput(catalog, new Set(['u-col-start-md-10', 'u-col-start-10', 'u-col-md-3', 'u-col-3']))
+
+		expect(output.indexOf('.u-col-3 {')).toBeLessThan(output.indexOf('.u-col-start-10 {'))
+		expect(output.indexOf('.u-col-md-3 {')).toBeLessThan(output.indexOf('.u-col-start-md-10 {'))
+	})
+
 	test('buildOutput merges multiple non-media declaration blocks for the same class into one rule (regression: row.css duplicate .u-col-12)', () => {
 		process.argv = ['node', 'cli.js', 'utils']
 		const cmd = new UtilsCommand()
 		const output = cmd.buildOutput(FAKE_CATALOG, new Set(['u-col-12']))
 
 		expect(output.match(/\.u-col-12 \{/g)).toHaveLength(1)
-		expect(output).toBe(
-			'.u-col-12 {\n\twidth: 100%;\n\tpadding-left: calc(var(--u-space-md, 1rem)/2);\n\tflex: 0 0 100%;\n\tmax-width: 100%;\n}\n'
-		)
+		expect(output).toBe('.u-col-12 {\n\twidth: 100%;\n\tpadding-left: calc(var(--u-space-md, 1rem)/2);\n\tflex: 0 0 100%;\n\tmax-width: 100%;\n}\n')
 	})
 
 	test('dry run does not call writeFileSync', () => {

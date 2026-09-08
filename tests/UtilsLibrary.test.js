@@ -8,7 +8,7 @@ describe('UtilsLibrary', () => {
 	})
 
 	test('registers a mixin-free class with no media condition', () => {
-		expect(catalog.get('u-flex')).toEqual([{ media: null, decls: 'display: flex;' }])
+		expect(catalog.get('u-flex')).toMatchObject([{ media: null, decls: 'display: flex;' }])
 	})
 
 	test('registers a responsive class under its breakpoint media condition', () => {
@@ -23,6 +23,20 @@ describe('UtilsLibrary', () => {
 		expect(variants).toHaveLength(6)
 		expect(variants[0].media).toBeNull()
 		expect(variants.slice(1).map((v) => v.media)).toEqual(['(min-width: 40em)', '(min-width: 48em)', '(min-width: 64em)', '(min-width: 80em)', '(min-width: 96em)'])
+	})
+
+	test('registers the column-start classes', () => {
+		const variants = catalog.get('u-col-start-10')
+		expect(variants).toHaveLength(1)
+		expect(variants[0].media).toBeNull()
+		expect(variants[0].decls).toBe('grid-column-start: 10;')
+	})
+
+	test('records each rule\'s source position so consumers can reproduce the library cascade', () => {
+		// .u-col-start-N must come after .u-col-N: it only sets grid-column-start, while
+		// .u-col-N sets it via the grid-column shorthand.
+		expect(catalog.get('u-col-start-10')[0].order).toBeGreaterThan(catalog.get('u-col-3')[0].order)
+		expect(catalog.get('u-col-start-md-10')[0].order).toBeGreaterThan(catalog.get('u-col-md-3')[0].order)
 	})
 
 	test('does not register non-class selectors', () => {

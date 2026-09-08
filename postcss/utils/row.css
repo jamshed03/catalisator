@@ -13,12 +13,30 @@
 	}
 }
 
+@for $i from 1 to 12 {
+	.u-col-start-$(i) {
+		grid-column-start: $(i);
+	}
+}
+
+.u-col-start-auto {
+	grid-column-start: auto;
+}
+
 @each $bp in sm, md, lg, xl, 2xl {
 	@include media-breakpoint-up($bp) {
 		@for $i from 1 to 12 {
 			.u-col-$(bp)-$(i) {
 				grid-column: span $(i) / span $(i);
 			}
+		}
+		@for $i from 1 to 12 {
+			.u-col-start-$(bp)-$(i) {
+				grid-column-start: $(i);
+			}
+		}
+		.u-col-start-$(bp)-auto {
+			grid-column-start: auto;
 		}
 	}
 }
