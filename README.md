@@ -75,8 +75,36 @@ Zusätzlich zur Migration bringt Catalisator eine kleine, mitgelieferte Biblioth
 }
 ```
 
+**Fluid — Min/Max selbst bestimmen:**
+```scss
+@use 'catalisator/scss/mixins/fluid' as *;
+
+.my-headline {
+	// skaliert linear von 44px (bei 375px Viewport) auf 112px (bei 1440px)
+	@include fluid(font-size, 44, 112);
+	@include fluid(padding-top, 16, 48);
+}
+```
+
+`fluid` erwartet die beiden Endpunkte als reine px-Zahlen und erzeugt daraus ein `clamp()` —
+im Gegensatz zu `font-size()`/`rfs-calc()`, das sein Minimum selbst aus `$rfs-base-value` und
+`$rfs-factor` errechnet. Die Viewport-Grenzen stehen in `$fluid-min-vw` (375) und
+`$fluid-max-vw` (1440) und lassen sich vor dem `@use` überschreiben.
+
 ```jsx
 <div className="u-container u-flex u-items-center">...</div>
+```
+
+Für Lücken im 12er-Raster gibt es `u-col-start-N` (plus responsive Varianten und
+`u-col-start-auto`), das die Startspalte eines Elements erzwingt — damit lässt sich gezielt
+eine Rasterspalte frei lassen, was mit dem uniformen `gap` allein nicht geht:
+
+```jsx
+<div className="u-row">
+	<div className="u-col-5">1</div>
+	<div className="u-col-3">2</div>
+	<div className="u-col-3 u-col-start-10">3</div>
+</div>
 ```
 
 Solange du `catalisator` als Dependency installiert hast, funktionieren diese Imports. Entfernst du das Package, musst du die entsprechenden `@import`/`@use`-Zeilen ebenfalls entfernen.
@@ -106,7 +134,7 @@ Der Scan durchsucht `.tsx`/`.jsx`/`.js`/`.vue`/`.html`-Dateien nach `class="..."
 
 ### Mixins exportieren
 
-Willst du nicht nur die fertigen Utility-Klassen, sondern die **rohen Mixins selbst** (`media-breakpoint-up`, `rfs-calc`, `padding`/`margin`/`font-size`/`gap`-Shortcuts) in deinem eigenen Code weiterverwenden, kopiert `catalisator mixins` sie in einen Ordner deiner Wahl:
+Willst du nicht nur die fertigen Utility-Klassen, sondern die **rohen Mixins selbst** (`media-breakpoint-up`, `fluid`, `rfs-calc`, `padding`/`margin`/`font-size`/`gap`-Shortcuts) in deinem eigenen Code weiterverwenden, kopiert `catalisator mixins` sie in einen Ordner deiner Wahl:
 
 ```bash
 npx catalisator mixins          # Default: scss-Format nach ./src/styles/catalisator-mixins
@@ -180,7 +208,8 @@ Wiederverwendbare Bausteine liegen in `postcss/` (werden per `@import` in echte 
 
 - `variables.css` — `$space-xs/sm/md/lg/xl/2xl` (0.25/0.5/1/1.5/2/3rem, mirrors `css/variables.css`'s `--u-space-*`) und `$breakpoint-sm/md/lg/xl/2xl` (40/48/64/80/96em, mirrors `--u-breakpoint-*`)
 - `mixins/breakpoints.css` — `@mixin media-breakpoint-up($breakpoint)` / `media-breakpoint-down($breakpoint)`
-- `mixins/rfs.css`, `mixins/shortcuts.css` — fluid/scaled-size mixins, aktuell in Überarbeitung (RFS wird auf einen expliziten `fluid`-Ansatz umgebaut)
+- `mixins/fluid.css` — `@mixin fluid($property, $min, $max)`: explizite Min/Max-Skalierung zwischen `$fluid-min-vw` (375) und `$fluid-max-vw` (1440)
+- `mixins/rfs.css`, `mixins/shortcuts.css` — impliziter Bootstrap-RFS-Ansatz (Minimum aus `$rfs-base-value`/`$rfs-factor` abgeleitet); wird schrittweise von `fluid` abgelöst
 
 Beispiel (`postcss/utils/container.css`):
 
@@ -198,3 +227,29 @@ Beispiel (`postcss/utils/container.css`):
 Konsumenten von `catalisator` sehen davon nichts — sie importieren immer nur die fertig kompilierten Dateien aus `css/` oder `scss/`. Details und Konventionen: `.claude/skills/add-utils-module`.
 
 **Wichtige Einschränkung:** `@include`-Aufrufe von `media-breakpoint-up`/`-down` in `postcss/` **müssen** in `@if`/`@else`-Form implementiert sein (wie in `mixins/breakpoints.css`), nicht mit verschachtelter Variablen-Interpolation à la `$(breakpoint-$(breakpoint))` — letztere hat sich als unzuverlässig erwiesen (funktioniert nur, wenn der `@include`-Aufruf in einen Selektor verschachtelt ist, nicht auf oberster Ebene einer Datei, wie es `container.css` braucht). In `scss/` ist das kein Problem — echtes Sass unterstützt `@else if`-Ketten zuverlässig nativ.
+
+## 🤖 Doku für KI-Agents
+
+Für Projekte, die mit Claude Code / Cursor o. Ä. arbeiten, liegen zwei kompakte
+Referenz-Dateien im Package, die ein Agent direkt aus `node_modules` lesen kann. Sie sind nach
+**Aufgabe** getrennt, damit ein Agent nur das lädt, was er gerade braucht:
+
+- `node_modules/catalisator/docs/agents/utils.md` — der Alltagsfall: vollständige
+  `u-*`-Klassenreferenz mit Beispielen **plus** `npx catalisator utils` zum Neugenerieren.
+  Self-contained.
+- `node_modules/catalisator/docs/agents/migrate.md` — nur fürs einmalige Setup:
+  `npx catalisator` (Tailwind-Migration) und `npx catalisator mixins`.
+
+Verweise darauf konditional aus der `AGENTS.md` / `CLAUDE.md` deines Projekts, damit nicht bei
+jedem Task beide Dateien gelesen werden:
+
+```md
+## Styling
+
+Dieses Projekt nutzt die Catalisator-Utils-Bibliothek (`u-*`-Klassen).
+
+- Bevor du Markup schreibst oder Layout-Klassen änderst, lies
+  `node_modules/catalisator/docs/agents/utils.md`.
+- Nur wenn eine Tailwind-Migration oder ein Mixin-Export ansteht, zusätzlich
+  `node_modules/catalisator/docs/agents/migrate.md`.
+```
